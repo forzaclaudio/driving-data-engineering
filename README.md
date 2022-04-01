@@ -1,2 +1,3 @@
-# data-dave
-Forzaclaudio's data science portfolio
+# Data Science portfolio
+
+Forzaclaudio's code to showcase data science concepts and skills.
