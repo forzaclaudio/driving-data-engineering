@@ -39,10 +39,12 @@ def groups_in_file(mdf):
             pass
         if is_dict:
             data_groups += 1
+    print(data_groups, 'groups were found!')
     return data_groups
 
 def display_metadata(mdf, signals_only=False):
     """Display the metadata of the MDF instance provided."""
+
     print('Groups:')
     for group in metadata.keys():
         print(group)
@@ -60,43 +62,109 @@ def display_metadata(mdf, signals_only=False):
                 print(metadata[group])
         print('='*80)
 
-mdf = MDF(add_datadir(FILE))
-#display_metadata(mdf, signals_only=True)
-data_groups = groups_in_file(mdf)
-print(data_groups, 'were found!')
+def split_dataframe(full_df, debug=False):
+    """Split dataframes in numeric and non numerical"""
 
-#mdf = MDF(add_datadir(FILE), channels=required_channels)
-#display_metadata(mdf)
-#for g in range(data_groups):
+    num_index = []
+    non_num_index = []
+    for i in range(full_df.shape[1]):
+        if is_numeric_dtype(full_df.iloc[:,i]):
+            if debug:
+                print("Col", i, "is numeric")
+            num_index.append(i)
+        else:
+            if debug:
+                print("Col", i, "is non numeric")
+            non_num_index.append(i)
+    if debug:
+        print("Numerical cols", num_index)
+        print("Non numerical cols", non_num_index)
+    numeric = full_df.iloc[:,num_index]
+    non_num_index = full_df.iloc[:,non_num_index]
+    return (numeric, non_num_index)
 
-dataframes = []
-non_numeric_dataframes = []
-for g in range(data_groups):
-    df = mdf.get_group(g)
-    if is_numeric_dtype(df.loc[0]):
-        dataframes.append(df)
-#        dataframes.append(df.iloc[0:10, :])
-        print(dataframes[-1])
-    else:
-        non_numeric_dataframes.append(df)
-print(len(dataframes), "numerical dataframes found!")
-print(len(non_numeric_dataframes), "non-numerical dataframes found!")
+def extract_dataframes(data_groups, debug=False):
+    """Extract numerical and non-numerical dataframes."""
 
-def hot_encode(input_df):
+    dfs = []
+    non_numeric_dfs = []
+
+    for g in range(data_groups):
+        df = mdf.get_group(g)
+        num, non_num = split_dataframe(df)
+        if not num.empty:
+            dfs.append(num)
+        if not non_num.empty:
+            non_numeric_dfs.append(non_num)
+    return (dfs, non_numeric_dfs)
+
+def hot_encode(input_df, debug=False):
     """Hot encode the given dataframe."""
+
     encoder = OneHotEncoder()
-    encoder_df = pd.DataFrame(encoder.fit_transform(input_df).toarray(), index=input_df.index)
-    column_names = []
-    for i in range(encoder_df.shape[1]):
-        column_names.append(input_df.columns[0])
-    encoder_df.columns = column_names
-    return encoder_df
+    encoded_df = pd.DataFrame(encoder.fit_transform(input_df).toarray(), index=input_df.index)
 
-#encoded_df = hot_encode(dataframes[3])
+    column_names = {}
+    final_names = []
+    if debug:
+        print("Input shape is:", input_df.shape[1])
+    for col in input_df.columns:
+        labels = []
+        if debug:
+            print("Generating column:", col)
+        temp_labels = input_df[col].unique().tolist()
+        for l in temp_labels:
+            try:
+                labels.append(l.decode('UTF-8'))
+            except:
+                labels.append(l)
+        if debug:
+            print("The following unique values were found:", labels)
+        column_names[col] = labels
+    if debug:
+        print(column_names)
+    for col in column_names.keys():
+        for label in column_names[col]:
+            final_names.append("{}_{}".format(col, label))
+    encoded_df.columns = final_names
+    return encoded_df
 
-df_merged = reduce(lambda  left,right: pd.merge(left, right, on=['timestamps'],
-    how='outer'), dataframes)
-print("Result of merging", df_merged, df_merged.shape)
+def hot_encode_dataframes(non_numeric_dfs, debug=False):
+    """One-how encode the provided dataframes."""
 
+    encoded_non_numeric_df = []
+    for i, df in enumerate(non_numeric_dfs):
+        if debug:
+            print("Encoding dataframe:", i)
+            print(df)
+        temp = hot_encode(df, False)
+        encoded_non_numeric_df.append(temp)
+        if debug:
+            print(temp)
+    return encoded_non_numeric_df
 
-df_merged.to_csv('out.csv',index=True)
+def assemble_dataframe(dfs, debug=False):
+    """Generate a global dataframe."""
+
+    df_merged = reduce(lambda  left,right: pd.merge(left, right,
+                       on=['timestamps'], how='outer'), dfs)
+    if debug:
+        print("Unsorted merge", df_merged.head(), df_merged.shape)
+    df_merged_sorted = df_merged.sort_values('timestamps')
+    if debug:
+        print("Result of sorting", df_merged_sorted.head(), df_merged.shape)
+    return df_merged_sorted
+
+mdf = MDF(add_datadir(FILE))
+data_groups = groups_in_file(mdf)
+dfs, non_numeric_dfs = extract_dataframes(data_groups, debug=False)
+
+print(len(dfs), "numerical dataframes found!")
+print(len(non_numeric_dfs), "non-numerical dataframes found!")
+if False:
+    encoded_df = hot_encode_dataframes(non_numeric_dfs, debug=False)
+    final_df = assemble_dataframe(encoded_df[50:-1], debug=False)
+    final_df.to_csv('non_numerical_2_of_2.csv',index=True)
+
+final_df = assemble_dataframe(dfs[100:-1], debug=False)
+final_df.to_csv('numerical_3_of_3.csv',index=True)
