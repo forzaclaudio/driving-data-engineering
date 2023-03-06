@@ -1,0 +1,4 @@
+[obs_connection]
+host = <hostname or ip>
+port = <port of Websocket server>
+password = <password>
