@@ -1,4 +1,4 @@
-package main
+package tsdb
 
 import (
 	"context"
