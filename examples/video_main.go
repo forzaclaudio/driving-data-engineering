@@ -1,4 +1,4 @@
-package main
+package video
 
 import (
         "time"
@@ -6,7 +6,7 @@ import (
 
 func main(){
     myRecorder := &VideoRecorder{}
-    myRecorder.Initialize()
+    myRecorder.Initialize("../../config/config.toml")
     myRecorder.GetInfo()
     myRecorder.StartRecording()
     time.Sleep(10 * time.Second)

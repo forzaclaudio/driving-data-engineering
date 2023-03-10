@@ -4,14 +4,6 @@ import (
 	"testing"
 )
 
-type spyClient struct {
-    Calls int
-}
-
-func (s *spyClient) NewClient(){
-	s.Calls++
-}
-
 func TestTSDB(t *testing.T){
     want := &TSDB{"localhost", 1234, "<some-token>", "http://localhost:1234", "some-org", "some-bucket"}
     got := &TSDB{}

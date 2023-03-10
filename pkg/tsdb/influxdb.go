@@ -50,8 +50,8 @@ func (tsdb *TSDB) Initialize(configPath string) {
     tsdb.port = config.Get("influxdb_connection.port").(int64)
     tsdb.uri = fmt.Sprintf("http://%s:%d", tsdb.host, tsdb.port)
     tsdb.token = config.Get("influxdb_connection.token").(string)
-    tsdb.org = config.Get("session.org").(string)
-    tsdb.bucket = config.Get("session.bucket").(string)
+    tsdb.org = config.Get("influxdb_connection.org").(string)
+    tsdb.bucket = config.Get("influxdb_connection.bucket").(string)
     log.Println(tsdb.uri, tsdb.org, tsdb.bucket)
 }
 

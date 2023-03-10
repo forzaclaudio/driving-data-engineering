@@ -1,0 +1,4 @@
+[obs_connection]
+host = "some-host"
+port = 1234
+password = "some-password"
