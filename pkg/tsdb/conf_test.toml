@@ -2,3 +2,12 @@
 host = "localhost"
 port = 1234
 token = "<some-token>"
+org = "some-org"
+bucket = "some-bucket"
+
+[session]
+location = "some-location"
+org = "some-org"
+bucket = "some-bucket"
+driver = "some-driver"
+gender = "some-gender"
