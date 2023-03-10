@@ -1,0 +1,16 @@
+package main
+
+import (
+	"github.com/forzaclaudio/driving-data-engineering/pkg/driver"
+        "time"
+)
+
+func main(){
+    myRecorder := &video.VideoRecorder{}
+    myRecorder.Initialize("../config/config.toml")
+    myRecorder.GetInfo()
+    myRecorder.StartRecording()
+    time.Sleep(10 * time.Second)
+    myRecorder.StopRecording()
+}
+
