@@ -1,0 +1,4 @@
+[influxdb_connection]
+host = "localhost"
+port = 1234
+token = "<some-token>"
