@@ -3,6 +3,7 @@ package main
 import (
         "time"
 )
+
 func main(){
     myRecorder := &VideoRecorder{}
     myRecorder.Initialize()

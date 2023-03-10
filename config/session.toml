@@ -1,0 +1,6 @@
+[session]
+location = "Bahrain"
+org = "volvo-data-engineering"
+bucket = "f1-sim"
+driver = "forzaclaudio"
+gender = "male"
