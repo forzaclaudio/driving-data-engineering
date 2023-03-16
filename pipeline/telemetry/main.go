@@ -1,24 +1,49 @@
 package main
 
 import (
+	"io/ioutil"
 	"log"
+	"fmt"
 	"os"
 	"os/signal"
-
+	"net/http"
+	"github.com/forzaclaudio/driving-data-engineering/pkg/driver"
+	"github.com/forzaclaudio/driving-data-engineering/pkg/tsdb"
 	"github.com/anilmisirlioglu/f1-telemetry-go/pkg/packets"
 	"github.com/anilmisirlioglu/f1-telemetry-go/pkg/telemetry"
 )
 
+func pingUploader(vr *video.VideoRecorder, port int){
+	print(vr)
+	url := fmt.Sprintf("%s:%d","meh", port)
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Fatalln(err)
+	}
+	log.Println(string(body))
+}
+
 func main() {
-	myTSDB := &TSDB{}
-	myTSDB.Initialize()
-	mySession := &SimSession{}
-	mySession.Initialize()
+	myTSDB := &influxdb.TSDB{}
+	myTSDB.Initialize("../../config/config.toml")
+	mySession := &influxdb.SimSession{}
+	mySession.Initialize("../../config/session.toml")
+	myRecorder := &video.VideoRecorder{}
+	myRecorder.Initialize("../../config/config.toml")
+	myRecorder.GetInfo()
+	uploaderPort := 8080
 
 	client, err := telemetry.NewClientByCustomIpAddressAndPort("0.0.0.0", 20777)
 	if err != nil {
 		log.Fatal("When creating telemetry client:", err)
 	}
+
+
 
 	// wait exit signal
 	c := make(chan os.Signal, 1)
@@ -27,9 +52,12 @@ func main() {
 		<-c
 		log.Printf("Packet RecvCount: %d\n", client.Stats.RecvCount())
 		log.Printf("Packet ErrCount: %d\n", client.Stats.ErrCount())
+		myRecorder.StopRecording()
+		pingUploader(myRecorder, uploaderPort)
 		os.Exit(1)
 	}()
 	client.OnLapPacket(func(packet *packets.PacketLapData) {
+		myRecorder.StartRecording()
 		lap := packet.Self()
 		myTSDB.SaveIntDataPointWithUnits(mySession, "ms", "current_lap_time", int32(lap.CurrentLapTimeInMS))
 		myTSDB.SaveIntDataPointWithUnits(mySession, "ms", "last_lap_time", int32(lap.CurrentLapTimeInMS))
@@ -50,4 +78,5 @@ func main() {
 	})
 	log.Println("F1 telemetry client running")
 	client.Run()
+
 }

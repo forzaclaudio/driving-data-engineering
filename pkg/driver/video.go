@@ -41,7 +41,7 @@ func (x *VideoRecorder) StartRecording() {
     handleFatalError("When getting OBS client", err)
     defer obs_client.Disconnect()
     _, err =  obs_client.Record.StartRecord()
-    handleFatalError("On start recording", err)
+    handleNonFatalError("On start recording", err)
 }
 
 func (x *VideoRecorder) StopRecording() {
@@ -49,7 +49,7 @@ func (x *VideoRecorder) StopRecording() {
     handleFatalError("When getting OBS client", err)
     defer obs_client.Disconnect()
     outFilePath, err := obs_client.Record.StopRecord()
-    handleFatalError("On stop recording", err)
+    handleNonFatalError("On stop recording", err)
     log.Println("Recording saved to file:", outFilePath)
 }
 
