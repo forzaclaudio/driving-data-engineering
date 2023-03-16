@@ -44,13 +44,15 @@ func (x *VideoRecorder) StartRecording() {
     handleNonFatalError("On start recording", err)
 }
 
-func (x *VideoRecorder) StopRecording() {
+func (x *VideoRecorder) StopRecording() string {
     obs_client, err := goobs.New(x.obs_connection, goobs.WithPassword(x.obs_pwd))
     handleFatalError("When getting OBS client", err)
     defer obs_client.Disconnect()
-    outFilePath, err := obs_client.Record.StopRecord()
+    response, err := obs_client.Record.StopRecord()
     handleNonFatalError("On stop recording", err)
-    log.Println("Recording saved to file:", outFilePath)
+    filePath := response.OutputPath
+    log.Println("Recording saved to file:", filePath)
+    return filePath
 }
 
 func (x *VideoRecorder) GetInfo() {
