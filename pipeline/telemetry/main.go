@@ -1,6 +1,8 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"io/ioutil"
 	"log"
 	"fmt"
@@ -13,9 +15,8 @@ import (
 	"github.com/anilmisirlioglu/f1-telemetry-go/pkg/telemetry"
 )
 
-func pingUploader(vr *video.VideoRecorder, port int){
-	print(vr)
-	url := fmt.Sprintf("%s:%d","meh", port)
+func pingUploader(host string, port int){
+	url := fmt.Sprintf("http://%s:%d/version",host, port)
 	resp, err := http.Get(url)
 	if err != nil {
 		log.Fatalln(err)
@@ -28,22 +29,42 @@ func pingUploader(vr *video.VideoRecorder, port int){
 	log.Println(string(body))
 }
 
+func requestFileUpload(host string, port int, filePath string) {
+	url := fmt.Sprintf("http://%s:%d/upload",host, port)
+	requestBody, err:= json.Marshal(map[string]string{"win_filepath": filePath})
+	if err != nil {
+	    log.Println(err)
+	}
+	resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestBody))
+	if err != nil {
+	    log.Println(err)
+	}
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(string(body))
+}
+
 func main() {
-	myTSDB := &influxdb.TSDB{}
+	//myTSDB := &influxdb.TSDB{}
+	myTSDB := new(influxdb.TSDB)
 	myTSDB.Initialize("../../config/config.toml")
-	mySession := &influxdb.SimSession{}
+	//mySession := &influxdb.SimSession{}
+	mySession := new(influxdb.SimSession)
 	mySession.Initialize("../../config/session.toml")
-	myRecorder := &video.VideoRecorder{}
+	//myRecorder := &video.VideoRecorder{}
+	myRecorder := new(video.VideoRecorder)
 	myRecorder.Initialize("../../config/config.toml")
 	myRecorder.GetInfo()
 	uploaderPort := 8080
+	pingUploader("192.168.1.13", uploaderPort)
 
 	client, err := telemetry.NewClientByCustomIpAddressAndPort("0.0.0.0", 20777)
 	if err != nil {
 		log.Fatal("When creating telemetry client:", err)
 	}
-
-
 
 	// wait exit signal
 	c := make(chan os.Signal, 1)
@@ -52,8 +73,8 @@ func main() {
 		<-c
 		log.Printf("Packet RecvCount: %d\n", client.Stats.RecvCount())
 		log.Printf("Packet ErrCount: %d\n", client.Stats.ErrCount())
-		myRecorder.StopRecording()
-		pingUploader(myRecorder, uploaderPort)
+		filePath := myRecorder.StopRecording()
+		requestFileUpload("192.168.1.13", uploaderPort, filePath)
 		os.Exit(1)
 	}()
 	client.OnLapPacket(func(packet *packets.PacketLapData) {
