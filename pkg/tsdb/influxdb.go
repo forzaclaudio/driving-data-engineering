@@ -41,7 +41,7 @@ type SimSession struct {
 }
 
 func (tsdb *TSDB) Initialize(configPath string) {
-    log.Println("Initializing TDSB...")
+    log.Println("Initializing TSDB...")
     config_path, err := filepath.Abs(configPath)
     handleFatalError("When generating config_path", err)
     config, err := toml.LoadFile(config_path)
