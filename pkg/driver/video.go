@@ -56,7 +56,7 @@ func (x *VideoRecorder) StopRecording() string {
 }
 
 func (x *VideoRecorder) GetInfo() {
-    obs_client, err := goobs.New(x.obs_connection, goobs.WithPassword(x.obs_pwd))
+    obs_client, err := goobs.New(x.obs_connection, goobs.WithPassword(x.obs_pwd), goobs.WithResponseTimeout(1000))
     handleFatalError("When getting OBS client", err)
     defer obs_client.Disconnect()
     version, err :=  obs_client.General.GetVersion()

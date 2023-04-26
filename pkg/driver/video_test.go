@@ -11,7 +11,4 @@ func TestTSDB(t *testing.T){
     if got.obs_host != want.obs_host{
         t.Errorf("got.obs_host = %q, want.obs_host = %q", got.obs_host, want.obs_host)
     }
-    //obs_port
-    //obs_pwd
-    //obs_connection
 }
