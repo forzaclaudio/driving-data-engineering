@@ -7,7 +7,5 @@ bucket = "some-bucket"
 
 [session]
 location = "some-location"
-org = "some-org"
-bucket = "some-bucket"
 driver = "some-driver"
 gender = "some-gender"
