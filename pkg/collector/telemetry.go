@@ -21,8 +21,7 @@ func (tc *TelemetryClient) ParseValues(config *toml.Tree) (err error) {
 		return err
 	}()
 	tc.udp_port = config.Get("telemetry_client.udp_port").(int64)
-	log.Println("Client will listen on:", tc.udp_port)
-	return nil
+	turn nil
 }
 
 func (tc *TelemetryClient) Initialize(configPath string) error {
@@ -39,7 +38,7 @@ func (tc *TelemetryClient) Initialize(configPath string) error {
 	if err != nil {
 		return fmt.Errorf("[Telemetry Client Initialize]: failed to parse values: %w", err)
 	}
-	log.Println("Will listen on", tc.udp_port)
+	log.Println("Telemetry client will listen on:", tc.udp_port)
 	return nil
 }
 
