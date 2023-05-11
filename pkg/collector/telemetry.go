@@ -21,7 +21,7 @@ func (tc *TelemetryClient) ParseValues(config *toml.Tree) (err error) {
 		return err
 	}()
 	tc.udp_port = config.Get("telemetry_client.udp_port").(int64)
-	turn nil
+	return nil
 }
 
 func (tc *TelemetryClient) Initialize(configPath string) error {
