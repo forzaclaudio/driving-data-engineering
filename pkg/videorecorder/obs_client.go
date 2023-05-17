@@ -30,6 +30,15 @@ func newMockVideoRecorder() *mockVideoRecorder {
 	return &mockVideoRecorder{}
 }
 
+func (vr *VideoRecorder) Identify() string {
+	id := "VideoRecorder"
+	return id
+}
+
+func (vr *VideoRecorder) getParam(s string) interface{} {
+	return nil
+}
+
 func (vr *VideoRecorder) ParseValues(config *toml.Tree) (err error) {
 	defer func() error {
 		if recover() != nil {

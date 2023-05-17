@@ -50,6 +50,23 @@ func (tsdb *TSDB) ParseValues(config *toml.Tree) (err error) {
 	return nil
 }
 
+func (tsdb *TSDB) Identify() string {
+	id := "TimeSeriesDatabase"
+	return id
+}
+
+func (ss *SimSession) Identify() string {
+	id := "SessionData"
+	return id
+}
+
+func (tsdb *TSDB) getParam(s string) interface{} {
+	return nil
+}
+func (ss *SimSession) getParam(s string) interface{} {
+	return nil
+}
+
 func (tsdb *TSDB) Initialize(configPath string) error {
 	log.Println("Initializing TSDB...")
 	config_path, err := filepath.Abs(configPath)

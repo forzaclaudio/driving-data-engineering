@@ -1,65 +1,48 @@
 package main
 
 import (
-	"bytes"
-	"encoding/json"
-	"io/ioutil"
 	"log"
-	"fmt"
-	"os"
-	"os/signal"
-	"net/http"
-	"github.com/forzaclaudio/driving-data-engineering/pkg/driver"
-	"github.com/forzaclaudio/driving-data-engineering/pkg/tsdb"
-	"github.com/anilmisirlioglu/f1-telemetry-go/pkg/packets"
-	"github.com/anilmisirlioglu/f1-telemetry-go/pkg/telemetry"
+	//"os"
+	//"os/signal"
+
+	influxdb "github.com/forzaclaudio/driving-data-engineering/pkg/tsdb"
+	"github.com/forzaclaudio/f1-telemetry-go/pkg/packets"
+	"github.com/forzaclaudio/f1-telemetry-go/pkg/telemetry"
 )
 
-func pingUploader(host string, port int){
-	url := fmt.Sprintf("http://%s:%d/version",host, port)
-	resp, err := http.Get(url)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Fatalln(err)
-	}
-	log.Println(string(body))
-}
-
-func requestFileUpload(host string, port int, filePath string) {
-	url := fmt.Sprintf("http://%s:%d/upload",host, port)
-	requestBody, err:= json.Marshal(map[string]string{"win_filepath": filePath})
-	if err != nil {
-	    log.Println(err)
-	}
-	resp, err := http.Post(url, "application/json", bytes.NewBuffer(requestBody))
-	if err != nil {
-	    log.Println(err)
-	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Println(err)
-	}
-	log.Println(string(body))
-}
-
-func main() {
-	//myTSDB := &influxdb.TSDB{}
+/*func systemInit() map[string]bool{
+	subsystem := make(map[string]bool)
 	myTSDB := new(influxdb.TSDB)
 	myTSDB.Initialize("../../config/config.toml")
-	//mySession := &influxdb.SimSession{}
+	subsystem["tsdb"] = true
+	return subsystem
+}*/
+
+func main() {
+	/*	subsystem := systemInit()
+		if subsystem["tsdb"] == true {
+			log.Print("TSDB on")
+		} else {
+			log.Print("TSDB off")
+		}
+	*/
+	myTSDB := new(influxdb.TSDB)
+	err := myTSDB.Initialize("../../config/config.toml")
+	//err := myTSDB.Initialize("../../pkg/tsdb/dummy_conf_test.toml")
+	if err != nil {
+		log.Fatal("[Pipeline Main]: ", err)
+	}
 	mySession := new(influxdb.SimSession)
 	mySession.Initialize("../../config/session.toml")
-	//myRecorder := &video.VideoRecorder{}
-	myRecorder := new(video.VideoRecorder)
-	myRecorder.Initialize("../../config/config.toml")
-	myRecorder.GetInfo()
-	uploaderPort := 8080
-	pingUploader("192.168.1.13", uploaderPort)
+	/*
+		myRecorder := new(video.VideoRecorder)
+		myRecorder.Initialize("../../config/config.toml")
+		log.Printf("MyRecorder\n", myRecorder)
+		myRecorder.GetInfo()
+	log.Printf("Info collected successfully!\n", myRecorder)*/
+	//uploaderPort := 8080
+	//pingUploader("192.168.1.2", uploaderPort)
+	isNotRecording := true
 
 	client, err := telemetry.NewClientByCustomIpAddressAndPort("0.0.0.0", 20777)
 	if err != nil {
@@ -67,18 +50,22 @@ func main() {
 	}
 
 	// wait exit signal
-	c := make(chan os.Signal, 1)
+	/*c := make(chan os.Signal, 1)
 	signal.Notify(c, os.Interrupt)
 	go func() {
 		<-c
 		log.Printf("Packet RecvCount: %d\n", client.Stats.RecvCount())
 		log.Printf("Packet ErrCount: %d\n", client.Stats.ErrCount())
-		filePath := myRecorder.StopRecording()
-		requestFileUpload("192.168.1.13", uploaderPort, filePath)
+		//filePath := myRecorder.StopRecording()
+		//requestFileUpload("192.168.1.2", uploaderPort, filePath)
 		os.Exit(1)
-	}()
+	}()*/
+
 	client.OnLapPacket(func(packet *packets.PacketLapData) {
-		myRecorder.StartRecording()
+		if isNotRecording == true {
+			//  myRecorder.StartRecording()
+			isNotRecording = false
+		}
 		lap := packet.Self()
 		myTSDB.SaveIntDataPointWithUnits(mySession, "ms", "current_lap_time", int32(lap.CurrentLapTimeInMS))
 		myTSDB.SaveIntDataPointWithUnits(mySession, "ms", "last_lap_time", int32(lap.CurrentLapTimeInMS))
