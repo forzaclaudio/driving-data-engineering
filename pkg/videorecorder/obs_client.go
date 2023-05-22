@@ -35,8 +35,9 @@ func (vr *VideoRecorder) Identify() string {
 	return id
 }
 
-func (vr *VideoRecorder) getParam(s string) interface{} {
-	return nil
+func (vr *VideoRecorder) GetParams() interface{} {
+	params := vr
+	return params
 }
 
 func (vr *VideoRecorder) ParseValues(config *toml.Tree) (err error) {

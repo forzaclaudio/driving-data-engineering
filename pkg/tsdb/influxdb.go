@@ -55,9 +55,19 @@ func (tsdb *TSDB) Identify() string {
 	return id
 }
 
+func (tsdb *TSDB) GetParams() interface{} {
+	params := tsdb
+	return params
+}
+
 func (ss *SimSession) Identify() string {
 	id := "SessionData"
 	return id
+}
+
+func (ss *SimSession) GetParams() interface{} {
+	params := ss
+	return params
 }
 
 func (tsdb *TSDB) getParam(s string) interface{} {

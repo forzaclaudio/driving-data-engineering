@@ -18,11 +18,9 @@ func (tc *TelemetryClient) Identify() string {
 	return id
 }
 
-func (tc *TelemetryClient) getParam(p string) interface{} {
-	if p == "udp_port" {
-		return tc.udp_port
-	}
-	return nil
+func (tc *TelemetryClient) GetParams() interface{} {
+	params := tc
+	return params
 }
 
 func (tc *TelemetryClient) ParseValues(config *toml.Tree) (err error) {

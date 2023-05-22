@@ -111,3 +111,10 @@ func Test_StopRecording(t *testing.T) {
 		t.Errorf("Unexpected error when parsing calling StartRecording")
 	}
 }
+
+func Test_VideoRecorder_GetParams(t *testing.T) {
+	got := VideoRecorder{"some-host", 0, "some-password", "some-connection"}
+	if got.GetParams() == nil {
+		t.Errorf("Unexpected value returned by method GetParams")
+	}
+}

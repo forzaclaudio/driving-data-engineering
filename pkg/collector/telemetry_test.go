@@ -47,3 +47,10 @@ func Test_TelemetryClient(t *testing.T) {
 		t.Errorf("got.udp_port = %q, want.upd_port = %q", got.udp_port, want.udp_port)
 	}
 }
+
+func Test_TelemetryClient_GetParams(t *testing.T) {
+	got := &TelemetryClient{20777}
+	if got.GetParams() == nil {
+		t.Errorf("Unexpected value returned by method GetParams")
+	}
+}
